@@ -1,0 +1,6 @@
+hr-sop-system/
+├── index.html       # 主页面
+├── style.css        # 样式文件
+├── script.js        # 核心逻辑
+├── assets/
+│   └── checklist-icon.svg  # 状态图标
