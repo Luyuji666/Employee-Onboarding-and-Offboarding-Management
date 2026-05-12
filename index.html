@@ -3,252 +3,356 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HR入离职SOP管理系统</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>HR全流程监控看板</title>
+    <style>
+        :root {
+            --bg-color: #f4f7fe;
+            --card-bg: #ffffff;
+            --primary: #4318ff;
+            --text-main: #2b3674;
+            --text-light: #a3aed0;
+            --success: #01b574;
+            --warning: #ffb547;
+            --danger: #ee5d50;
+        }
+        body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); }
+        h1, h2, h3 { margin: 0; font-weight: 700; }
+        
+        /* 顶部操作栏 */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        
+        /* 看板布局 */
+        .kanban-board { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; }
+        .column { min-width: 300px; width: 300px; background: #e9ecef; border-radius: 16px; padding: 15px; }
+        .column-header { display: flex; justify-content: space-between; margin-bottom: 15px; color: var(--text-light); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .column-count { background: rgba(0,0,0,0.1); padding: 2px 8px; border-radius: 10px; color: var(--text-main); }
+
+        /* 员工卡片 */
+        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); position: relative; border-left: 4px solid transparent; }
+        .card.urgent { border-left-color: var(--danger); }
+        .card.process { border-left-color: var(--warning); }
+        
+        .card-name { font-size: 16px; font-weight: 600; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .card-role { font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
+        
+        .tag { font-size: 10px; padding: 4px 8px; border-radius: 6px; background: #f0f5ff; color: var(--primary); font-weight: 600; }
+        .tag.red { background: #ffebeb; color: var(--danger); }
+        .tag.green { background: #e6fffa; color: var(--success); }
+
+        .alert-box { font-size: 11px; color: var(--danger); background: #fff5f5; padding: 8px; border-radius: 8px; margin-top: 10px; border: 1px solid #fed7d7; }
+        .action-btn { width: 100%; margin-top: 10px; padding: 6px; font-size: 12px; background: #f4f7fe; color: var(--primary); border: none; border-radius: 6px; cursor: pointer; }
+        .action-btn:hover { background: #e9ecef; }
+
+        /* 弹窗 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; width: 500px; padding: 25px; border-radius: 20px; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; }
+        .close-modal { float: right; cursor: pointer; font-size: 20px; font-weight: bold; color: #aaa; }
+        
+        /* 离职证明指引 */
+        .guide-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 15px; border-radius: 10px; font-size: 13px; margin-top: 10px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>HR入离职全流程SOP管理系统</h1>
-            <p class="subtitle">专注解决材料缺失、社保异常等高频问题 | 数据仅本地存储</p>
-        </header>
 
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="onboarding">入职管理</button>
-            <button class="tab-btn" data-tab="offboarding">离职管理</button>
-            <button class="tab-btn" data-tab="knowledge">知识库</button>
+    <div class="header">
+        <div>
+            <h1>HR 入离职全流程监控</h1>
+            <p style="color: var(--text-light); font-size: 14px; margin-top: 5px;">实时监控材料进度、社保异常与时间节点</p>
         </div>
-
-        <!-- 入职管理面板 -->
-        <div id="onboarding" class="tab-content active">
-            <div class="step-card">
-                <div class="step-header">
-                    <div class="step-number">1</div>
-                    <h2>入职信息确认</h2>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>员工姓名 *</label>
-                        <input type="text" id="employee-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>联系电话 *</label>
-                        <input type="tel" id="employee-phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label>岗位 *</label>
-                        <input type="text" id="position" required>
-                    </div>
-                    <div class="form-group">
-                        <label>社保缴纳</label>
-                        <select id="social-security">
-                            <option value="yes">是（需填写基数）</option>
-                            <option value="no">否</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="ss-base-group" style="display:none;">
-                        <label>社保缴纳基数</label>
-                        <input type="number" id="ss-base" placeholder="例：8000">
-                    </div>
-                    <div class="form-group">
-                        <label>试用期</label>
-                        <select id="probation">
-                            <option value="1">1个月</option>
-                            <option value="2">2个月</option>
-                            <option value="3" selected>3个月</option>
-                            <option value="6">6个月</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn primary" id="generate-qr">生成入职材料二维码</button>
-            </div>
-
-            <div class="step-card">
-                <div class="step-header">
-                    <div class="step-number">2</div>
-                    <h2>入职材料追踪</h2>
-                </div>
-                <div class="material-status">
-                    <div class="status-header">
-                        <h3>材料提交状态</h3>
-                        <div class="status-badge" id="material-status">待提交</div>
-                    </div>
-                    <div class="checklist">
-                        <div class="check-item" data-item="photo">
-                            <input type="checkbox" id="photo">
-                            <label for="photo">1. 彩色证件照 <span class="warning">（需清晰人脸）</span></label>
-                        </div>
-                        <div class="check-item" data-item="degree">
-                            <input type="checkbox" id="degree">
-                            <label for="degree">2. 学历材料 <span class="warning">（证书+学信网证明）</span></label>
-                        </div>
-                        <div class="check-item" data-item="id-card">
-                            <input type="checkbox" id="id-card">
-                            <label for="id-card">3. 身份证正反面 <span class="error" id="id-card-error"></span></label>
-                        </div>
-                        <div class="check-item" data-item="resign">
-                            <input type="checkbox" id="resign">
-                            <label for="resign">4. 离职证明 <span class="error" id="resign-error"></span></label>
-                        </div>
-                        <div class="check-item" data-item="bank">
-                            <input type="checkbox" id="bank">
-                            <label for="bank">5. 交通银行卡复印件</label>
-                        </div>
-                        <div class="check-item" data-item="crime">
-                            <input type="checkbox" id="crime">
-                            <label for="crime">6. 无犯罪记录证明 <span class="warning">（海南户籍用"海易办"）</span></label>
-                        </div>
-                        <div class="check-item" data-item="credit">
-                            <input type="checkbox" id="credit">
-                            <label for="credit">7. 征信报告</label>
-                        </div>
-                        <div class="check-item" data-item="resume">
-                            <input type="checkbox" id="resume">
-                            <label for="resume">8. 个人简历</label>
-                        </div>
-                        <div class="check-item" data-item="medical">
-                            <input type="checkbox" id="medical">
-                            <label for="medical">9. 入职体检报告 <span class="error" id="medical-error"></span></label>
-                        </div>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="btn secondary" id="remind-btn">发送材料提醒</button>
-                        <button class="btn primary" id="complete-materials">材料已齐全</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="step-card" id="ss-card" style="display:none;">
-                <div class="step-header">
-                    <div class="step-number">3</div>
-                    <h2>社保公积金增员</h2>
-                </div>
-                <div class="ss-checklist">
-                    <h3>请确认以下问题已解决：</h3>
-                    <div class="check-item">
-                        <input type="checkbox" id="ss-issue1">
-                        <label for="ss-issue1">原单位已完成社保/公积金减员</label>
-                    </div>
-                    <div class="check-item">
-                        <input type="checkbox" id="ss-issue2">
-                        <label for="ss-issue2">未在领取失业金（如在领取需先停止）</label>
-                    </div>
-                    <div class="check-item">
-                        <input type="checkbox" id="ss-issue3">
-                        <label for="ss-issue3">未以灵活就业身份参保（需先停缴）</label>
-                    </div>
-                    <div class="ss-warning" id="ss-warning" style="display:none;">
-                        ⚠️ 检测到社保问题未解决！请先处理以上事项
-                    </div>
-                    <button class="btn primary" id="ss-complete">确认增员完成</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 离职管理面板（简化版） -->
-        <div id="offboarding" class="tab-content" style="display:none;">
-            <div class="step-card">
-                <div class="step-header">
-                    <div class="step-number">1</div>
-                    <h2>离职申请审核</h2>
-                </div>
-                <div class="offboarding-checklist">
-                    <div class="check-item">
-                        <input type="checkbox" id="check-contract-date">
-                        <label for="check-contract-date">✅ 第一份合同签订日期已填写</label>
-                    </div>
-                    <div class="check-item">
-                        <input type="checkbox" id="check-employer">
-                        <label for="check-employer">✅ 用工单位全称正确（<span id="employer-name">嗨亚科技有限公司</span>）</label>
-                    </div>
-                    <div class="check-item">
-                        <input type="checkbox" id="check-reason">
-                        <label for="check-reason">✅ 离职原因填写"个人"</label>
-                    </div>
-                    <div class="check-item">
-                        <input type="checkbox" id="check-signature">
-                        <label for="check-signature">✅ 申请人手写签名+捺印</label>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="btn secondary" id="reject-offboarding">退回修改</button>
-                        <button class="btn primary" id="approve-offboarding">审核通过</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 知识库面板 -->
-        <div id="knowledge" class="tab-content" style="display:none;">
-            <div class="knowledge-section">
-                <h2>高频问题解决方案</h2>
-                
-                <div class="knowledge-card">
-                    <h3>📌 身份证不清晰</h3>
-                    <p><strong>处理步骤：</strong></p>
-                    <ol>
-                        <li>立即联系员工重新提交（要求：边缘完整、四角可见）</li>
-                        <li>使用手机扫描软件（如"扫描全能王"）优化清晰度</li>
-                        <li>若仍不合格：要求员工到派出所补办临时身份证</li>
-                    </ol>
-                    <div class="tip">💡 <strong>预防措施：</strong> 在入职通知中明确要求"拍照时关闭美颜功能"</div>
-                </div>
-                
-                <div class="knowledge-card">
-                    <h3>📌 无学信网证明</h3>
-                    <p><strong>解决方案：</strong></p>
-                    <ul>
-                        <li>学历证书缺失：要求提供毕业院校官方补办证明</li>
-                        <li>学信网无法注册：检查姓名/身份证是否与证书一致</li>
-                        <li>海外学历：需提供教育部留学服务中心认证报告</li>
-                    </ul>
-                    <div class="tip">💡 <strong>操作指引：</strong> 学信网验证步骤 → <a href="#" class="guide-link" data-guide="xuexin">查看图文指南</a></div>
-                </div>
-                
-                <div class="knowledge-card">
-                    <h3>⚠️ 社保增员异常处理</h3>
-                    <div class="decision-tree">
-                        <div class="tree-node current">
-                            <div class="node-title">社保增员失败原因？</div>
-                            <div class="node-choices">
-                                <button class="choice-btn" data-issue="original-employer">原单位未减员</button>
-                                <button class="choice-btn" data-issue="unemployment">领取失业金中</button>
-                                <button class="choice-btn" data-issue="flexible">灵活就业参保中</button>
-                            </div>
-                        </div>
-                        <div class="solution-panel" id="solution-original-employer" style="display:none;">
-                            <h4>✅ 原单位未减员处理方案</h4>
-                            <ol>
-                                <li>联系员工确认上家单位减员时间</li>
-                                <li>要求提供：<strong>社保减员回执单</strong>（电子版即可）</li>
-                                <li>若超期未减员：向当地社保局提交《社保异常情况说明》</li>
-                            </ol>
-                            <div class="download-link">📎 <a href="#" id="download-ss-notice">下载《社保异常情况说明》模板</a></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <footer>
-            <p>HR入离职SOP管理系统 | 数据仅存储在您的浏览器中 | <a href="#" id="clear-data">清除本地数据</a></p>
-            <p class="small">注：本系统为内部工具，不连接任何外部数据库，符合企业数据安全规范</p>
-        </footer>
+        <button class="btn" onclick="openModal('addEmpModal')">+ 新增员工/离职申请</button>
     </div>
 
-    <!-- 二维码生成模态框 -->
-    <div class="modal" id="qr-modal" style="display:none;">
+    <!-- 看板区域 -->
+    <div class="kanban-board">
+        <!-- 入职流程列 -->
+        <div class="column">
+            <div class="column-header">待提交材料 <span class="column-count" id="count-pending">0</span></div>
+            <div id="col-pending-materials"></div>
+        </div>
+
+        <div class="column">
+            <div class="column-header">材料审核/异常 <span class="column-count" id="count-review">0</span></div>
+            <div id="col-review"></div>
+        </div>
+
+        <div class="column">
+            <div class="column-header">待签合同/入职 <span class="column-count" id="count-contract">0</span></div>
+            <div id="col-contract"></div>
+        </div>
+
+        <div class="column">
+            <div class="column-header">离职办理中 <span class="column-count" id="count-resign">0</span></div>
+            <div id="col-resign"></div>
+        </div>
+    </div>
+
+    <!-- 新增员工/离职 弹窗 -->
+    <div id="addEmpModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>入职材料提交二维码</h2>
-            <p>请将此二维码发送给新员工，用于提交入职材料</p>
-            <div id="qrcode" style="margin: 20px auto; width: 200px;"></div>
-            <p class="small">员工扫码后将自动跳转至材料提交页面<br>（系统自动关联员工信息）</p>
-            <button class="btn primary" id="copy-qr-link">复制提交链接</button>
+            <span class="close-modal" onclick="closeModal('addEmpModal')">&times;</span>
+            <h2 style="margin-bottom: 20px;">录入员工信息</h2>
+            <form id="empForm" onsubmit="addEmployee(event)">
+                <div class="form-group">
+                    <label>类型</label>
+                    <select id="empType" onchange="toggleFormFields()">
+                        <option value="onboard">入职办理</option>
+                        <option value="resign">离职申请</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label>岗位</label>
+                    <input type="text" id="role" required>
+                </div>
+
+                <!-- 入职专属字段 -->
+                <div id="onboardFields">
+                    <div class="form-group">
+                        <label>试用期 (月) <small>(无试用期填0)</small></label>
+                        <input type="number" id="probation" value="3">
+                    </div>
+                    <div class="form-group">
+                        <label>入职日期</label>
+                        <input type="date" id="joinDate" required>
+                    </div>
+                </div>
+
+                <!-- 离职专属字段 -->
+                <div id="resignFields" style="display:none;">
+                    <div class="form-group">
+                        <label>离职日期</label>
+                        <input type="date" id="resignDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>离职原因</label>
+                        <select id="resignReason">
+                            <option value="个人">个人原因</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" style="width:100%">确认录入系统</button>
+            </form>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // 初始化数据
+        let employees = JSON.parse(localStorage.getItem('hr_employees')) || [];
+
+        // 页面加载时渲染
+        window.onload = function() {
+            renderBoard();
+        };
+
+        // 切换表单显示
+        function toggleFormFields() {
+            const type = document.getElementById('empType').value;
+            document.getElementById('onboardFields').style.display = type === 'onboard' ? 'block' : 'none';
+            document.getElementById('resignFields').style.display = type === 'resign' ? 'block' : 'none';
+        }
+
+        // 打开/关闭弹窗
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // 添加员工
+        function addEmployee(e) {
+            e.preventDefault();
+            const type = document.getElementById('empType').value;
+            const name = document.getElementById('name').value;
+            const role = document.getElementById('role').value;
+            
+            let newEmp = {
+                id: Date.now(),
+                name: name,
+                role: role,
+                type: type,
+                status: type === 'onboard' ? 'pending_materials' : 'resign_applied'
+            };
+
+            if (type === 'onboard') {
+                newEmp.joinDate = document.getElementById('joinDate').value;
+                newEmp.probation = document.getElementById('probation').value;
+                newEmp.materialsSubmitted = false; // 初始状态：未提交
+            } else {
+                newEmp.resignDate = document.getElementById('resignDate').value;
+                newEmp.resignReason = document.getElementById('resignReason').value;
+                newEmp.proofGenerated = false;
+            }
+
+            employees.push(newEmp);
+            saveAndRender();
+            closeModal('addEmpModal');
+            document.getElementById('empForm').reset();
+            toggleFormFields();
+        }
+
+        // 核心逻辑：更新状态
+        function updateStatus(id, newStatus, extraData = {}) {
+            const emp = employees.find(e => e.id === id);
+            if (emp) {
+                Object.assign(emp, { status: newStatus }, extraData);
+                saveAndRender();
+            }
+        }
+
+        // 保存数据
+        function saveAndRender() {
+            localStorage.setItem('hr_employees', JSON.stringify(employees));
+            renderBoard();
+        }
+
+        // 渲染看板
+        function renderBoard() {
+            // 清空列
+            document.getElementById('col-pending-materials').innerHTML = '';
+            document.getElementById('col-review').innerHTML = '';
+            document.getElementById('col-contract').innerHTML = '';
+            document.getElementById('col-resign').innerHTML = '';
+
+            let counts = { pending: 0, review: 0, contract: 0, resign: 0 };
+
+            employees.forEach(emp => {
+                let card = document.createElement('div');
+                card.className = 'card';
+                
+                // 通用卡片头部
+                let headerHtml = `
+                    <div class="card-name">
+                        ${emp.name} 
+                        <span class="tag">${emp.type === 'onboard' ? '入职' : '离职'}</span>
+                    </div>
+                    <div class="card-role">${emp.role}</div>
+                `;
+                card.innerHTML = headerHtml;
+
+                // 逻辑判断与渲染
+                if (emp.type === 'onboard') {
+                    // === 入职流程逻辑 ===
+                    
+                    // 1. 待提交材料
+                    if (emp.status === 'pending_materials') {
+                        card.classList.add('urgent');
+                        card.innerHTML += `
+                            <div class="alert-box">
+                                <strong>⚠️ 待办：</strong>需联系员工扫码填花名册并提交材料。
+                            </div>
+                            <button class="action-btn" onclick="updateStatus(${emp.id}, 'review')">✅ 模拟：材料已提交</button>
+                        `;
+                        document.getElementById('col-pending-materials').appendChild(card);
+                        counts.pending++;
+                    }
+                    
+                    // 2. 材料审核中 (模拟常见问题)
+                    else if (emp.status === 'review') {
+                        card.classList.add('process');
+                        // 模拟逻辑：随机或手动标记是否有问题
+                        let hasIssue = emp.hasIssue || false; 
+                        
+                        if (hasIssue) {
+                            card.innerHTML += `
+                                <div class="alert-box">
+                                    <strong>❌ 材料异常：</strong>${emp.issueDetail || '身份证模糊/缺学历证明'}<br>
+                                    已退回员工补充。
+                                </div>
+                                <button class="action-btn" onclick="updateStatus(${emp.id}, 'review', {hasIssue: false})">✅ 重新审核通过</button>
+                            `;
+                        } else {
+                            card.innerHTML += `
+                                <div style="color:var(--success); font-size:12px; margin-bottom:10px;">
+                                    ✅ 材料齐全，待发起合同
+                                </div>
+                                <button class="action-btn" onclick="triggerIssue(${emp.id})">🐞 模拟：发现材料缺失</button>
+                                <button class="action-btn" style="background:var(--primary); color:white; margin-top:5px;" onclick="updateStatus(${emp.id}, 'contract')">🚀 发起合同 & 入职</button>
+                            `;
+                        }
+                        document.getElementById('col-review').appendChild(card);
+                        counts.review++;
+                    }
+
+                    // 3. 合同与入职
+                    else if (emp.status === 'contract') {
+                        card.innerHTML += `
+                            <div class="alert-box" style="background:#e6fffa; color:#166534; border-color:#b2f5ea;">
+                                <strong>📝 试用期：</strong> ${emp.probation == 0 ? '无试用期' : emp.probation + '个月'}
+                            </div>
+                            <div style="font-size:12px; margin-top:10px; color:var(--text-light);">
+                                社保/公积金：已增员<br>
+                                工会：已增员
+                            </div>
+                            <button class="action-btn" onclick="if(confirm('入职流程结束，归档？')) updateStatus(${emp.id}, 'done')">归档</button>
+                        `;
+                        document.getElementById('col-contract').appendChild(card);
+                        counts.contract++;
+                    }
+                } 
+                else {
+                    // === 离职流程逻辑 ===
+                    if (emp.status === 'resign_applied') {
+                        card.innerHTML += `
+                            <div class="alert-box">
+                                <strong>📄 离职申请：</strong>待审核<br>
+                                <small>重点核对：合同签订时间、用工单位全称</small>
+                            </div>
+                            <button class="action-btn" style="background:var(--primary); color:white;" onclick="updateStatus(${emp.id}, 'resign_proof')">审核通过 & 开具证明</button>
+                        `;
+                        document.getElementById('col-resign').appendChild(card);
+                        counts.resign++;
+                    } 
+                    else if (emp.status === 'resign_proof') {
+                        // 计算减员时间
+                        const resignDate = new Date(emp.resignDate);
+                        const currentMonth = new Date().getMonth() + 1;
+                        const resignMonth = resignDate.getMonth() + 1;
+                        
+                        // 逻辑：如果本月离职，社保通常下月减员
+                        let reductionMonth = resignMonth === 12 ? 1 : resignMonth + 1;
+                        let reductionYear = resignDate.getFullYear();
+                        if (resignMonth === 12) reductionYear++;
+
+                        card.innerHTML += `
+                            <div class="guide-box">
+                                <strong>✅ 离职证明已开具</strong><br>
+                                指引：员工自助平台 -> 开具证明 -> 下载
+                            </div>
+                            <div class="alert-box" style="margin-top:10px; background:#ebf8ff; color:#3182ce; border-color:#90e0ef;">
+                                <strong>⏰ 社保减员监控：</strong><br>
+                                员工${resignMonth}月离职，请在 <strong>${reductionYear}年${reductionMonth}月</strong> 执行减员操作。
+                            </div>
+                            <button class="action-btn" onclick="if(confirm('流程结束？')) updateStatus(${emp.id}, 'done')">完成减员 & 归档</button>
+                        `;
+                        document.getElementById('col-resign').appendChild(card);
+                        counts.resign++;
+                    }
+                }
+            });
+
+            // 更新计数
+            document.getElementById('count-pending').innerText = counts.pending;
+            document.getElementById('count-review').innerText = counts.review;
+            document.getElementById('count-contract').innerText = counts.contract;
+            document.getElementById('count-resign').innerText = counts.resign;
+        }
+
+        // 模拟触发材料问题
+        function triggerIssue(id) {
+            const issues = ["身份证照片模糊", "缺少学历证明", "无犯罪记录未开具", "体检缺项"];
+            const randomIssue = issues[Math.floor(Math.random() * issues.length)];
+            updateStatus(id, 'review', { hasIssue: true, issueDetail: randomIssue });
+        }
+
+    </script>
 </body>
 </html>
