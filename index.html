@@ -3,147 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HR全流程监控看板</title>
+    <title>HR入离职全流程看板</title>
     <style>
         :root {
-            --bg-color: #f4f7fe;
-            --card-bg: #ffffff;
-            --primary: #4318ff;
-            --text-main: #2b3674;
-            --text-light: #a3aed0;
-            --success: #01b574;
-            --warning: #ffb547;
-            --danger: #ee5d50;
+            --bg-body: #f0f2f5;
+            --bg-card: #ffffff;
+            --primary: #1890ff;
+            --success: #52c41a;
+            --warning: #faad14;
+            --danger: #ff4d4f;
+            --text-main: #262626;
+            --text-sub: #8c8c8c;
+            --border: #d9d9d9;
         }
-        body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); }
-        h1, h2, h3 { margin: 0; font-weight: 700; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
         
+        body { background-color: var(--bg-body); padding: 20px; color: var(--text-main); }
+        
+        h1 { text-align: center; margin-bottom: 20px; color: #1f2d3d; }
+
         /* 顶部操作栏 */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
-        
+        .header-actions {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
+        .input-group label { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .input-group input, .input-group select { padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
+
+        button {
+            padding: 9px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-danger { background-color: var(--danger); color: white; }
+
         /* 看板布局 */
-        .kanban-board { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; }
-        .column { min-width: 300px; width: 300px; background: #e9ecef; border-radius: 16px; padding: 15px; }
-        .column-header { display: flex; justify-content: space-between; margin-bottom: 15px; color: var(--text-light); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .column-count { background: rgba(0,0,0,0.1); padding: 2px 8px; border-radius: 10px; color: var(--text-main); }
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 280px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+        }
+
+        .column-header {
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #444;
+        }
+
+        .count-badge {
+            background: #d9d9d9;
+            color: #595959;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
 
         /* 员工卡片 */
-        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); position: relative; border-left: 4px solid transparent; }
-        .card.urgent { border-left-color: var(--danger); }
-        .card.process { border-left-color: var(--warning); }
-        
-        .card-name { font-size: 16px; font-weight: 600; margin-bottom: 5px; display: flex; justify-content: space-between; }
-        .card-role { font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
-        
-        .tag { font-size: 10px; padding: 4px 8px; border-radius: 6px; background: #f0f5ff; color: var(--primary); font-weight: 600; }
-        .tag.red { background: #ffebeb; color: var(--danger); }
-        .tag.green { background: #e6fffa; color: var(--success); }
+        .card {
+            background: var(--bg-card);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
+            border-left: 4px solid transparent;
+        }
 
-        .alert-box { font-size: 11px; color: var(--danger); background: #fff5f5; padding: 8px; border-radius: 8px; margin-top: 10px; border: 1px solid #fed7d7; }
-        .action-btn { width: 100%; margin-top: 10px; padding: 6px; font-size: 12px; background: #f4f7fe; color: var(--primary); border: none; border-radius: 6px; cursor: pointer; }
-        .action-btn:hover { background: #e9ecef; }
+        .card.status-pending { border-left-color: var(--text-sub); }
+        .card.status-warning { border-left-color: var(--warning); background-color: #fffbe6; }
+        .card.status-process { border-left-color: var(--primary); }
+        .card.status-done { border-left-color: var(--success); }
 
-        /* 弹窗 */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; width: 500px; padding: 25px; border-radius: 20px; max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 500; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; }
-        .close-modal { float: right; cursor: pointer; font-size: 20px; font-weight: bold; color: #aaa; }
+        .card h3 { margin-bottom: 8px; font-size: 16px; display: flex; justify-content: space-between; }
+        .card p { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
+        .card .info-row { display: flex; justify-content: space-between; font-size: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #f0f0f0; }
+
+        /* 标签 */
+        .tag {
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: normal;
+        }
+        .tag-red { background: #ffe6e6; color: var(--danger); border: 1px solid #ffa39e; }
+        .tag-orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+        .tag-blue { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+
+        /* 操作按钮组 */
+        .card-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 3px; }
+        .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-primary-sm { background: var(--primary); color: white; border: none; }
+        .btn-danger-sm { background: var(--danger); color: white; border: none; }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .checklist-item { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .checklist-item input { width: auto; margin: 0; }
         
-        /* 离职证明指引 */
-        .guide-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 15px; border-radius: 10px; font-size: 13px; margin-top: 10px; }
+        @media (max-width: 768px) {
+            .kanban-board { flex-direction: column; }
+            .column { min-width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div>
-            <h1>HR 入离职全流程监控</h1>
-            <p style="color: var(--text-light); font-size: 14px; margin-top: 5px;">实时监控材料进度、社保异常与时间节点</p>
+    <h1>🚀 员工入离职全流程监控看板</h1>
+
+    <!-- 录入区域 -->
+    <div class="header-actions">
+        <div class="input-group">
+            <label>员工姓名</label>
+            <input type="text" id="inputName" placeholder="例如：张三">
         </div>
-        <button class="btn" onclick="openModal('addEmpModal')">+ 新增员工/离职申请</button>
+        <div class="input-group">
+            <label>入职日期</label>
+            <input type="date" id="inputDate">
+        </div>
+        <div class="input-group">
+            <label>试用期</label>
+            <select id="inputProbation">
+                <option value="3个月">3个月</option>
+                <option value="6个月">6个月</option>
+                <option value="无">无试用期</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="addEmployee()">➕ 添加新员工</button>
     </div>
 
     <!-- 看板区域 -->
     <div class="kanban-board">
-        <!-- 入职流程列 -->
+        <!-- 列1：待提交材料 -->
         <div class="column">
-            <div class="column-header">待提交材料 <span class="column-count" id="count-pending">0</span></div>
-            <div id="col-pending-materials"></div>
+            <div class="column-header">
+                <span>📂 待提交材料</span>
+                <span class="count-badge" id="count-pending">0</span>
+            </div>
+            <div id="list-pending"></div>
         </div>
 
+        <!-- 列2：审核中/异常 -->
         <div class="column">
-            <div class="column-header">材料审核/异常 <span class="column-count" id="count-review">0</span></div>
-            <div id="col-review"></div>
+            <div class="column-header">
+                <span style="color:var(--warning)">⚠️ 审核/异常</span>
+                <span class="count-badge" id="count-warning">0</span>
+            </div>
+            <div id="list-warning"></div>
         </div>
 
+        <!-- 列3：待办理入职 -->
         <div class="column">
-            <div class="column-header">待签合同/入职 <span class="column-count" id="count-contract">0</span></div>
-            <div id="col-contract"></div>
+            <div class="column-header">
+                <span style="color:var(--primary)">⚙️ 待办理入职</span>
+                <span class="count-badge" id="count-process">0</span>
+            </div>
+            <div id="list-process"></div>
         </div>
 
+        <!-- 列4：已完成 -->
         <div class="column">
-            <div class="column-header">离职办理中 <span class="column-count" id="count-resign">0</span></div>
-            <div id="col-resign"></div>
+            <div class="column-header">
+                <span style="color:var(--success)">✅ 已完成</span>
+                <span class="count-badge" id="count-done">0</span>
+            </div>
+            <div id="list-done"></div>
         </div>
     </div>
 
-    <!-- 新增员工/离职 弹窗 -->
-    <div id="addEmpModal" class="modal">
+    <!-- 详情模态框 -->
+    <div id="detailModal" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('addEmpModal')">&times;</span>
-            <h2 style="margin-bottom: 20px;">录入员工信息</h2>
-            <form id="empForm" onsubmit="addEmployee(event)">
-                <div class="form-group">
-                    <label>类型</label>
-                    <select id="empType" onchange="toggleFormFields()">
-                        <option value="onboard">入职办理</option>
-                        <option value="resign">离职申请</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>姓名</label>
-                    <input type="text" id="name" required>
-                </div>
-                <div class="form-group">
-                    <label>岗位</label>
-                    <input type="text" id="role" required>
-                </div>
-
-                <!-- 入职专属字段 -->
-                <div id="onboardFields">
-                    <div class="form-group">
-                        <label>试用期 (月) <small>(无试用期填0)</small></label>
-                        <input type="number" id="probation" value="3">
-                    </div>
-                    <div class="form-group">
-                        <label>入职日期</label>
-                        <input type="date" id="joinDate" required>
-                    </div>
-                </div>
-
-                <!-- 离职专属字段 -->
-                <div id="resignFields" style="display:none;">
-                    <div class="form-group">
-                        <label>离职日期</label>
-                        <input type="date" id="resignDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>离职原因</label>
-                        <select id="resignReason">
-                            <option value="个人">个人原因</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn" style="width:100%">确认录入系统</button>
-            </form>
+            <h2 id="modalTitle">员工详情</h2>
+            <div id="modalBody"></div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn-outline btn-sm" onclick="closeModal()">关闭</button>
+            </div>
         </div>
     </div>
 
@@ -151,208 +236,212 @@
         // 初始化数据
         let employees = JSON.parse(localStorage.getItem('hr_employees')) || [];
 
-        // 页面加载时渲染
-        window.onload = function() {
-            renderBoard();
-        };
-
-        // 切换表单显示
-        function toggleFormFields() {
-            const type = document.getElementById('empType').value;
-            document.getElementById('onboardFields').style.display = type === 'onboard' ? 'block' : 'none';
-            document.getElementById('resignFields').style.display = type === 'resign' ? 'block' : 'none';
-        }
-
-        // 打开/关闭弹窗
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        // 添加员工
-        function addEmployee(e) {
-            e.preventDefault();
-            const type = document.getElementById('empType').value;
-            const name = document.getElementById('name').value;
-            const role = document.getElementById('role').value;
-            
-            let newEmp = {
-                id: Date.now(),
-                name: name,
-                role: role,
-                type: type,
-                status: type === 'onboard' ? 'pending_materials' : 'resign_applied'
-            };
-
-            if (type === 'onboard') {
-                newEmp.joinDate = document.getElementById('joinDate').value;
-                newEmp.probation = document.getElementById('probation').value;
-                newEmp.materialsSubmitted = false; // 初始状态：未提交
-            } else {
-                newEmp.resignDate = document.getElementById('resignDate').value;
-                newEmp.resignReason = document.getElementById('resignReason').value;
-                newEmp.proofGenerated = false;
-            }
-
-            employees.push(newEmp);
-            saveAndRender();
-            closeModal('addEmpModal');
-            document.getElementById('empForm').reset();
-            toggleFormFields();
-        }
-
-        // 核心逻辑：更新状态
-        function updateStatus(id, newStatus, extraData = {}) {
-            const emp = employees.find(e => e.id === id);
-            if (emp) {
-                Object.assign(emp, { status: newStatus }, extraData);
-                saveAndRender();
-            }
-        }
+        // 入职材料清单
+        const checklistItems = [
+            "1. 彩色证件照",
+            "2. 学历材料 (毕业证+学信网)",
+            "3. 身份证 (正反面)",
+            "4. 离职证明",
+            "5. 交通银行卡复印件",
+            "6. 无犯罪记录证明",
+            "7. 征信报告",
+            "8. 个人简历",
+            "9. 入职体检报告"
+        ];
 
         // 保存数据
-        function saveAndRender() {
+        function saveData() {
             localStorage.setItem('hr_employees', JSON.stringify(employees));
             renderBoard();
         }
 
+        // 添加员工
+        function addEmployee() {
+            const name = document.getElementById('inputName').value;
+            const date = document.getElementById('inputDate').value;
+            const probation = document.getElementById('inputProbation').value;
+
+            if (!name || !date) {
+                alert("请填写姓名和日期");
+                return;
+            }
+
+            const newEmp = {
+                id: Date.now(),
+                name: name,
+                date: date,
+                probation: probation,
+                status: 'pending', // pending, warning, process, done
+                materials: {}, // 记录材料状态
+               社保Issue: false // 社保问题标记
+            };
+
+            // 初始化材料状态为 false (未提交)
+            checklistItems.forEach(item => {
+                newEmp.materials[item] = false;
+            });
+
+            employees.push(newEmp);
+            document.getElementById('inputName').value = '';
+            saveData();
+        }
+
+        // 删除员工
+        function deleteEmployee(id) {
+            if(confirm("确定要删除该员工记录吗？")) {
+                employees = employees.filter(e => e.id !== id);
+                saveData();
+            }
+        }
+
+        // 更新状态
+        function updateStatus(id, newStatus) {
+            const emp = employees.find(e => e.id === id);
+            if (emp) {
+                emp.status = newStatus;
+                saveData();
+            }
+        }
+
+        // 切换材料状态
+        function toggleMaterial(id, materialName) {
+            const emp = employees.find(e => e.id === id);
+            if (emp) {
+                emp.materials[materialName] = !emp.materials[materialName];
+                
+                // 简单逻辑：如果材料有缺失，自动归为 warning，否则归为 process
+                const allSubmitted = Object.values(emp.materials).every(val => val === true);
+                if (allSubmitted && emp.status === 'warning') {
+                    emp.status = 'process';
+                }
+                saveData();
+            }
+        }
+
+        // 打开详情
+        function openDetail(id) {
+            const emp = employees.find(e => e.id === id);
+            if (!emp) return;
+
+            const modal = document.getElementById('detailModal');
+            const body = document.getElementById('modalBody');
+            
+            // 构建材料检查列表
+            let materialHtml = '<h3>材料清单核对</h3><div style="max-height:200px; overflow-y:auto; border:1px solid #eee; padding:10px; margin-bottom:10px;">';
+            checklistItems.forEach(item => {
+                const checked = emp.materials[item] ? 'checked' : '';
+                materialHtml += `
+                    <div class="checklist-item">
+                        <input type="checkbox" id="mat_${id}_${item}" ${checked} onchange="toggleMaterial(${id}, '${item}')">
+                        <label for="mat_${id}_${item}" style="${emp.materials[item] ? 'text-decoration:line-through; color:#999' : ''}">${item}</label>
+                    </div>
+                `;
+            });
+            materialHtml += '</div>';
+
+            // 社保问题开关
+            const社保Html = `
+                <div style="margin-bottom:15px; padding:10px; background:${emp.社保Issue ? '#fff1f0' : '#f6ffed'}; border:1px solid ${emp.社保Issue ? '#ffa39e' : '#b7eb8f'}; border-radius:4px;">
+                    <label style="font-weight:bold; cursor:pointer; display:flex; align-items:center;">
+                        <input type="checkbox" ${emp.社保Issue ? 'checked' : ''} onchange="toggle社保(${id})" style="margin-right:8px;">
+                        ⚠️ 存在社保/公积金增员阻碍 (原单位未减员/领失业金等)
+                    </label>
+                </div>
+            `;
+
+            body.innerHTML = `
+                <p><strong>姓名：</strong> ${emp.name}</p>
+                <p><strong>入职日期：</strong> ${emp.date} (${emp.probation})</p>
+                <hr style="margin: 15px 0;">
+                ${materialHtml}
+                ${社保Html}
+                <div class="card-actions" style="justify-content: space-between; margin-top:15px;">
+                    <button class="btn-danger btn-sm" onclick="deleteEmployee(${id})">删除员工</button>
+                    <div>
+                        ${emp.status !== 'pending' ? `<button class="btn-outline btn-sm" onclick="updateStatus(${id}, 'pending')">退回待提交</button>` : ''}
+                        ${emp.status !== 'warning' ? `<button class="btn-outline btn-sm" onclick="updateStatus(${id}, 'warning')">标记异常</button>` : ''}
+                        ${emp.status !== 'process' ? `<button class="btn-primary-sm btn-sm" onclick="updateStatus(${id}, 'process')">材料齐/办理中</button>` : ''}
+                        ${emp.status !== 'done' ? `<button class="btn-primary btn-sm" onclick="updateStatus(${id}, 'done')">✅ 完成入职</button>` : ''}
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        // 切换社保问题状态
+        function toggle社保(id) {
+            const emp = employees.find(e => e.id === id);
+            if (emp) {
+                emp.社保Issue = !emp.社保Issue;
+                // 如果有社保问题，强制提示
+                if (emp.社保Issue) {
+                    alert("⚠️ 注意：该员工存在社保增员阻碍，请在入职前确认原单位已减员！");
+                }
+                saveData();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
         // 渲染看板
         function renderBoard() {
-            // 清空列
-            document.getElementById('col-pending-materials').innerHTML = '';
-            document.getElementById('col-review').innerHTML = '';
-            document.getElementById('col-contract').innerHTML = '';
-            document.getElementById('col-resign').innerHTML = '';
+            // 清空列表
+            document.getElementById('list-pending').innerHTML = '';
+            document.getElementById('list-warning').innerHTML = '';
+            document.getElementById('list-process').innerHTML = '';
+            document.getElementById('list-done').innerHTML = '';
 
-            let counts = { pending: 0, review: 0, contract: 0, resign: 0 };
+            let counts = { pending: 0, warning: 0, process: 0, done: 0 };
 
             employees.forEach(emp => {
-                let card = document.createElement('div');
-                card.className = 'card';
-                
-                // 通用卡片头部
-                let headerHtml = `
-                    <div class="card-name">
-                        ${emp.name} 
-                        <span class="tag">${emp.type === 'onboard' ? '入职' : '离职'}</span>
-                    </div>
-                    <div class="card-role">${emp.role}</div>
-                `;
-                card.innerHTML = headerHtml;
+                counts[emp.status]++;
 
-                // 逻辑判断与渲染
-                if (emp.type === 'onboard') {
-                    // === 入职流程逻辑 ===
-                    
-                    // 1. 待提交材料
-                    if (emp.status === 'pending_materials') {
-                        card.classList.add('urgent');
-                        card.innerHTML += `
-                            <div class="alert-box">
-                                <strong>⚠️ 待办：</strong>需联系员工扫码填花名册并提交材料。
-                            </div>
-                            <button class="action-btn" onclick="updateStatus(${emp.id}, 'review')">✅ 模拟：材料已提交</button>
-                        `;
-                        document.getElementById('col-pending-materials').appendChild(card);
-                        counts.pending++;
-                    }
-                    
-                    // 2. 材料审核中 (模拟常见问题)
-                    else if (emp.status === 'review') {
-                        card.classList.add('process');
-                        // 模拟逻辑：随机或手动标记是否有问题
-                        let hasIssue = emp.hasIssue || false; 
-                        
-                        if (hasIssue) {
-                            card.innerHTML += `
-                                <div class="alert-box">
-                                    <strong>❌ 材料异常：</strong>${emp.issueDetail || '身份证模糊/缺学历证明'}<br>
-                                    已退回员工补充。
-                                </div>
-                                <button class="action-btn" onclick="updateStatus(${emp.id}, 'review', {hasIssue: false})">✅ 重新审核通过</button>
-                            `;
-                        } else {
-                            card.innerHTML += `
-                                <div style="color:var(--success); font-size:12px; margin-bottom:10px;">
-                                    ✅ 材料齐全，待发起合同
-                                </div>
-                                <button class="action-btn" onclick="triggerIssue(${emp.id})">🐞 模拟：发现材料缺失</button>
-                                <button class="action-btn" style="background:var(--primary); color:white; margin-top:5px;" onclick="updateStatus(${emp.id}, 'contract')">🚀 发起合同 & 入职</button>
-                            `;
-                        }
-                        document.getElementById('col-review').appendChild(card);
-                        counts.review++;
-                    }
+                // 检查材料缺失数量
+                const missingCount = Object.values(emp.materials).filter(v => v === false).length;
+                const totalMaterials = checklistItems.length;
 
-                    // 3. 合同与入职
-                    else if (emp.status === 'contract') {
-                        card.innerHTML += `
-                            <div class="alert-box" style="background:#e6fffa; color:#166534; border-color:#b2f5ea;">
-                                <strong>📝 试用期：</strong> ${emp.probation == 0 ? '无试用期' : emp.probation + '个月'}
-                            </div>
-                            <div style="font-size:12px; margin-top:10px; color:var(--text-light);">
-                                社保/公积金：已增员<br>
-                                工会：已增员
-                            </div>
-                            <button class="action-btn" onclick="if(confirm('入职流程结束，归档？')) updateStatus(${emp.id}, 'done')">归档</button>
-                        `;
-                        document.getElementById('col-contract').appendChild(card);
-                        counts.contract++;
-                    }
-                } 
-                else {
-                    // === 离职流程逻辑 ===
-                    if (emp.status === 'resign_applied') {
-                        card.innerHTML += `
-                            <div class="alert-box">
-                                <strong>📄 离职申请：</strong>待审核<br>
-                                <small>重点核对：合同签订时间、用工单位全称</small>
-                            </div>
-                            <button class="action-btn" style="background:var(--primary); color:white;" onclick="updateStatus(${emp.id}, 'resign_proof')">审核通过 & 开具证明</button>
-                        `;
-                        document.getElementById('col-resign').appendChild(card);
-                        counts.resign++;
-                    } 
-                    else if (emp.status === 'resign_proof') {
-                        // 计算减员时间
-                        const resignDate = new Date(emp.resignDate);
-                        const currentMonth = new Date().getMonth() + 1;
-                        const resignMonth = resignDate.getMonth() + 1;
-                        
-                        // 逻辑：如果本月离职，社保通常下月减员
-                        let reductionMonth = resignMonth === 12 ? 1 : resignMonth + 1;
-                        let reductionYear = resignDate.getFullYear();
-                        if (resignMonth === 12) reductionYear++;
-
-                        card.innerHTML += `
-                            <div class="guide-box">
-                                <strong>✅ 离职证明已开具</strong><br>
-                                指引：员工自助平台 -> 开具证明 -> 下载
-                            </div>
-                            <div class="alert-box" style="margin-top:10px; background:#ebf8ff; color:#3182ce; border-color:#90e0ef;">
-                                <strong>⏰ 社保减员监控：</strong><br>
-                                员工${resignMonth}月离职，请在 <strong>${reductionYear}年${reductionMonth}月</strong> 执行减员操作。
-                            </div>
-                            <button class="action-btn" onclick="if(confirm('流程结束？')) updateStatus(${emp.id}, 'done')">完成减员 & 归档</button>
-                        `;
-                        document.getElementById('col-resign').appendChild(card);
-                        counts.resign++;
-                    }
+                // 标签逻辑
+                let tagsHtml = '';
+                if (emp.probation === '无') {
+                    tagsHtml += '<span class="tag tag-blue">无试用期</span> ';
                 }
+                if (emp.社保Issue) {
+                    tagsHtml += '<span class="tag tag-red">社保异常</span> ';
+                }
+                if (missingCount > 0 && emp.status !== 'done') {
+                    tagsHtml += `<span class="tag tag-orange">缺${missingCount}项材料</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `card status-${emp.status}`;
+                card.innerHTML = `
+                    <h3>
+                        ${emp.name}
+                        ${tagsHtml}
+                    </h3>
+                    <p>📅 ${emp.date} | ${emp.probation}</p>
+                    <p style="font-size:12px; color:#999; margin-top:5px;">
+                        ${missingCount === 0 ? '✅ 材料齐全' : `⏳ 待收 ${missingCount}/${totalMaterials}`}
+                    </p>
+                    <div class="card-actions">
+                        <button class="btn-outline btn-sm" onclick="openDetail(${emp.id})">详情/操作</button>
+                    </div>
+                `;
+
+                document.getElementById(`list-${emp.status}`).appendChild(card);
             });
 
             // 更新计数
             document.getElementById('count-pending').innerText = counts.pending;
-            document.getElementById('count-review').innerText = counts.review;
-            document.getElementById('count-contract').innerText = counts.contract;
-            document.getElementById('count-resign').innerText = counts.resign;
+            document.getElementById('count-warning').innerText = counts.warning;
+            document.getElementById('count-process').innerText = counts.process;
+            document.getElementById('count-done').innerText = counts.done;
         }
 
-        // 模拟触发材料问题
-        function triggerIssue(id) {
-            const issues = ["身份证照片模糊", "缺少学历证明", "无犯罪记录未开具", "体检缺项"];
-            const randomIssue = issues[Math.floor(Math.random() * issues.length)];
-            updateStatus(id, 'review', { hasIssue: true, issueDetail: randomIssue });
-        }
-
+        // 初始化
+        renderBoard();
     </script>
 </body>
 </html>
