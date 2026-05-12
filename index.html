@@ -1,1 +1,254 @@
-# Employee-Onboarding-and-Offboarding-Management
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR入离职SOP管理系统</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HR入离职全流程SOP管理系统</h1>
+            <p class="subtitle">专注解决材料缺失、社保异常等高频问题 | 数据仅本地存储</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="onboarding">入职管理</button>
+            <button class="tab-btn" data-tab="offboarding">离职管理</button>
+            <button class="tab-btn" data-tab="knowledge">知识库</button>
+        </div>
+
+        <!-- 入职管理面板 -->
+        <div id="onboarding" class="tab-content active">
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h2>入职信息确认</h2>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>员工姓名 *</label>
+                        <input type="text" id="employee-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>联系电话 *</label>
+                        <input type="tel" id="employee-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>岗位 *</label>
+                        <input type="text" id="position" required>
+                    </div>
+                    <div class="form-group">
+                        <label>社保缴纳</label>
+                        <select id="social-security">
+                            <option value="yes">是（需填写基数）</option>
+                            <option value="no">否</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="ss-base-group" style="display:none;">
+                        <label>社保缴纳基数</label>
+                        <input type="number" id="ss-base" placeholder="例：8000">
+                    </div>
+                    <div class="form-group">
+                        <label>试用期</label>
+                        <select id="probation">
+                            <option value="1">1个月</option>
+                            <option value="2">2个月</option>
+                            <option value="3" selected>3个月</option>
+                            <option value="6">6个月</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn primary" id="generate-qr">生成入职材料二维码</button>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h2>入职材料追踪</h2>
+                </div>
+                <div class="material-status">
+                    <div class="status-header">
+                        <h3>材料提交状态</h3>
+                        <div class="status-badge" id="material-status">待提交</div>
+                    </div>
+                    <div class="checklist">
+                        <div class="check-item" data-item="photo">
+                            <input type="checkbox" id="photo">
+                            <label for="photo">1. 彩色证件照 <span class="warning">（需清晰人脸）</span></label>
+                        </div>
+                        <div class="check-item" data-item="degree">
+                            <input type="checkbox" id="degree">
+                            <label for="degree">2. 学历材料 <span class="warning">（证书+学信网证明）</span></label>
+                        </div>
+                        <div class="check-item" data-item="id-card">
+                            <input type="checkbox" id="id-card">
+                            <label for="id-card">3. 身份证正反面 <span class="error" id="id-card-error"></span></label>
+                        </div>
+                        <div class="check-item" data-item="resign">
+                            <input type="checkbox" id="resign">
+                            <label for="resign">4. 离职证明 <span class="error" id="resign-error"></span></label>
+                        </div>
+                        <div class="check-item" data-item="bank">
+                            <input type="checkbox" id="bank">
+                            <label for="bank">5. 交通银行卡复印件</label>
+                        </div>
+                        <div class="check-item" data-item="crime">
+                            <input type="checkbox" id="crime">
+                            <label for="crime">6. 无犯罪记录证明 <span class="warning">（海南户籍用"海易办"）</span></label>
+                        </div>
+                        <div class="check-item" data-item="credit">
+                            <input type="checkbox" id="credit">
+                            <label for="credit">7. 征信报告</label>
+                        </div>
+                        <div class="check-item" data-item="resume">
+                            <input type="checkbox" id="resume">
+                            <label for="resume">8. 个人简历</label>
+                        </div>
+                        <div class="check-item" data-item="medical">
+                            <input type="checkbox" id="medical">
+                            <label for="medical">9. 入职体检报告 <span class="error" id="medical-error"></span></label>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn secondary" id="remind-btn">发送材料提醒</button>
+                        <button class="btn primary" id="complete-materials">材料已齐全</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-card" id="ss-card" style="display:none;">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h2>社保公积金增员</h2>
+                </div>
+                <div class="ss-checklist">
+                    <h3>请确认以下问题已解决：</h3>
+                    <div class="check-item">
+                        <input type="checkbox" id="ss-issue1">
+                        <label for="ss-issue1">原单位已完成社保/公积金减员</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="ss-issue2">
+                        <label for="ss-issue2">未在领取失业金（如在领取需先停止）</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="ss-issue3">
+                        <label for="ss-issue3">未以灵活就业身份参保（需先停缴）</label>
+                    </div>
+                    <div class="ss-warning" id="ss-warning" style="display:none;">
+                        ⚠️ 检测到社保问题未解决！请先处理以上事项
+                    </div>
+                    <button class="btn primary" id="ss-complete">确认增员完成</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 离职管理面板（简化版） -->
+        <div id="offboarding" class="tab-content" style="display:none;">
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h2>离职申请审核</h2>
+                </div>
+                <div class="offboarding-checklist">
+                    <div class="check-item">
+                        <input type="checkbox" id="check-contract-date">
+                        <label for="check-contract-date">✅ 第一份合同签订日期已填写</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="check-employer">
+                        <label for="check-employer">✅ 用工单位全称正确（<span id="employer-name">嗨亚科技有限公司</span>）</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="check-reason">
+                        <label for="check-reason">✅ 离职原因填写"个人"</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="check-signature">
+                        <label for="check-signature">✅ 申请人手写签名+捺印</label>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn secondary" id="reject-offboarding">退回修改</button>
+                        <button class="btn primary" id="approve-offboarding">审核通过</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 知识库面板 -->
+        <div id="knowledge" class="tab-content" style="display:none;">
+            <div class="knowledge-section">
+                <h2>高频问题解决方案</h2>
+                
+                <div class="knowledge-card">
+                    <h3>📌 身份证不清晰</h3>
+                    <p><strong>处理步骤：</strong></p>
+                    <ol>
+                        <li>立即联系员工重新提交（要求：边缘完整、四角可见）</li>
+                        <li>使用手机扫描软件（如"扫描全能王"）优化清晰度</li>
+                        <li>若仍不合格：要求员工到派出所补办临时身份证</li>
+                    </ol>
+                    <div class="tip">💡 <strong>预防措施：</strong> 在入职通知中明确要求"拍照时关闭美颜功能"</div>
+                </div>
+                
+                <div class="knowledge-card">
+                    <h3>📌 无学信网证明</h3>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>学历证书缺失：要求提供毕业院校官方补办证明</li>
+                        <li>学信网无法注册：检查姓名/身份证是否与证书一致</li>
+                        <li>海外学历：需提供教育部留学服务中心认证报告</li>
+                    </ul>
+                    <div class="tip">💡 <strong>操作指引：</strong> 学信网验证步骤 → <a href="#" class="guide-link" data-guide="xuexin">查看图文指南</a></div>
+                </div>
+                
+                <div class="knowledge-card">
+                    <h3>⚠️ 社保增员异常处理</h3>
+                    <div class="decision-tree">
+                        <div class="tree-node current">
+                            <div class="node-title">社保增员失败原因？</div>
+                            <div class="node-choices">
+                                <button class="choice-btn" data-issue="original-employer">原单位未减员</button>
+                                <button class="choice-btn" data-issue="unemployment">领取失业金中</button>
+                                <button class="choice-btn" data-issue="flexible">灵活就业参保中</button>
+                            </div>
+                        </div>
+                        <div class="solution-panel" id="solution-original-employer" style="display:none;">
+                            <h4>✅ 原单位未减员处理方案</h4>
+                            <ol>
+                                <li>联系员工确认上家单位减员时间</li>
+                                <li>要求提供：<strong>社保减员回执单</strong>（电子版即可）</li>
+                                <li>若超期未减员：向当地社保局提交《社保异常情况说明》</li>
+                            </ol>
+                            <div class="download-link">📎 <a href="#" id="download-ss-notice">下载《社保异常情况说明》模板</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>HR入离职SOP管理系统 | 数据仅存储在您的浏览器中 | <a href="#" id="clear-data">清除本地数据</a></p>
+            <p class="small">注：本系统为内部工具，不连接任何外部数据库，符合企业数据安全规范</p>
+        </footer>
+    </div>
+
+    <!-- 二维码生成模态框 -->
+    <div class="modal" id="qr-modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>入职材料提交二维码</h2>
+            <p>请将此二维码发送给新员工，用于提交入职材料</p>
+            <div id="qrcode" style="margin: 20px auto; width: 200px;"></div>
+            <p class="small">员工扫码后将自动跳转至材料提交页面<br>（系统自动关联员工信息）</p>
+            <button class="btn primary" id="copy-qr-link">复制提交链接</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
